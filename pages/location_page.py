@@ -5,7 +5,13 @@ from urllib.parse import unquote
 
 dash.register_page(__name__, path_template="/location/<location_name>")
 
-layout = html.Div(id="location-page-content")
+# layout = html.Div(id="location-page-content")
+
+
+layout = html.Div([
+    dcc.Location(id="url", refresh=False),
+    html.Div(id="location-page-content")
+])
 
 test_var = "Test Variable Text-Woohoo!"
 

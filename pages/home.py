@@ -1,6 +1,6 @@
 import pandas as pd
 import plotly.express as px
-from dash import html, dcc, callback, Input, Output
+from dash import html, dcc, callback, Input, Output, clientside_callback
 import dash
 # from dash.dependencies import ClientsideFunction
 # from dash import clientside_callback
@@ -104,14 +104,31 @@ layout = html.Div([
            target="_blank"),
     # dcc.Graph(id="histogram", figure=hist),
     dcc.Graph(id="bar", figure=bar_fig),
+    dcc.Store(id="redirect-path"),
+    html.Div(id="dummy")  # placeholder output for clientside callback
+
 ], style={"backgroundColor": "#FFFFFF", "padding": "20px", "borderRadius": "10px"})
 
 @callback(
-    Output("map-url", "href"),
+    Output("redirect-path", "data"),
     Input("map", "clickData")
 )
+
 def go_to_location(clickData):
     if clickData:
         location = clickData["points"][0]["customdata"][0]
         return f"/location/{location.replace(' ', '_')}"
     return dash.no_update
+
+clientside_callback(
+    """
+    function(path) {
+        if (path) {
+            window.location.href = path;
+        }
+        return '';
+    }
+    """,
+    Output("dummy", "children"),
+    Input("redirect-path", "data")
+)
