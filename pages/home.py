@@ -80,9 +80,28 @@ fig.update_traces(marker=dict(size=10))  # Increase or decrease as needed
 
 # fig.update_traces(marker=dict(size=12, color="blue"))
 
+# Include stacked bar chart of residency specialties
+# Import residencies.csv as wide_df
+
+
+wide_df = pd.read_csv('residencies.csv')
+
+stacked_fig = px.bar(
+    wide_df, 
+    x="Specialty", 
+    y=["#1", "#2", "#3"], 
+    title="Frequency of Specialty Placement in Top 3 Residencies Per Med School for 2025 Match",
+    labels={"Specialty": "Specialty", 
+            "value": "Frequency in Top 3 Specialties Per Med School",
+            "variable": "Ranking in 2025 Match"},
+    )
+
+
+
+
 layout = html.Div([
     html.H2("LCME Accredited MD and MD-PhD Programs in the United States"),
-    html.P("Updated 5-12-25"),
+    html.P("Updated 5-14-25"),
     html.P("Click on any of the points in the map below to be directed to that med school's summary page."),
     dcc.Graph(id="map", figure=fig),
     dcc.Location(id="map-url", refresh=True),
@@ -104,6 +123,7 @@ layout = html.Div([
            target="_blank"),
     # dcc.Graph(id="histogram", figure=hist),
     dcc.Graph(id="bar", figure=bar_fig),
+    dcc.Graph(id="stacked_bar", figure=stacked_fig),
     dcc.Store(id="redirect-path"),
     html.Div(id="dummy")  # placeholder output for clientside callback
 
