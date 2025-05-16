@@ -1,6 +1,6 @@
 import pandas as pd
 import plotly.express as px
-from dash import html, dcc, callback, Input, Output, clientside_callback
+from dash import html, dcc, callback, Input, Output, clientside_callback, dash_table
 import dash
 # from dash.dependencies import ClientsideFunction
 # from dash import clientside_callback
@@ -11,7 +11,6 @@ dash.register_page(__name__, path="/")
 
 data = pd.read_csv('data.csv')
 
-# Attempt 1
 # Build map
 fig = px.scatter_mapbox(
     data,
@@ -96,12 +95,55 @@ stacked_fig = px.bar(
             "variable": "Ranking in 2025 Match"},
     )
 
+clustered_data = pd.read_csv('clustered_schools.csv')
 
+# Build map of clustered schools
+cluster_fig = px.scatter_mapbox(
+    clustered_data,
+    lat="Latitude",
+    lon="Longitude",
+    hover_name="School",
+    hover_data={
+        "Latitude": False,
+        "Longitude": False,
+        "State": False,
+        "City": False,
+        "LCME Accreditation Status": False,
+        "Initial Year of LCME Accreditation": False,
+        "MD-PhD Program": False,
+        "#1 Specialty (2025 Match)": False,
+        "#2 Specialty (2025 Match)": False,
+        "#3 Specialty (2025 Match)": False,
+        "hierarchical_cluster": True,
+        "cluster_summary": True,
+        },
+    custom_data=["School"],
+    zoom=3,
+    height=600,
+
+    # Attempt to specify colors
+    color = "hierarchical_cluster",
+)
+
+cluster_fig.update_layout(
+    mapbox_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0},
+    legend=dict(
+        orientation="h",  # horizontal legend
+        yanchor="bottom",
+        y=0,  # position from bottom (0 = bottom, 1 = top)
+        xanchor="center",
+        x=0.5  # center horizontally
+    )
+)
+
+cluster_fig.update_traces(marker=dict(size=10))  # Increase or decrease as needed
+
+table_df = clustered_data[['School', 'hierarchical_cluster', 'cluster_summary']].copy()
 
 
 layout = html.Div([
     html.H2("LCME Accredited MD and MD-PhD Programs in the United States"),
-    html.P("Updated 5-14-25"),
+    html.P("Updated 5-15-25 by Daniel Gallegos"),
     html.P("Click on any of the points in the map below to be directed to that med school's summary page."),
     dcc.Graph(id="map", figure=fig),
     dcc.Location(id="map-url", refresh=True),
@@ -124,6 +166,60 @@ layout = html.Div([
     # dcc.Graph(id="histogram", figure=hist),
     dcc.Graph(id="bar", figure=bar_fig),
     dcc.Graph(id="stacked_bar", figure=stacked_fig),
+    html.Br(),
+    html.Br(),
+    html.Hr(),
+    html.Br(),
+    html.Br(),
+    html.H2("Grouping Similar Medical Schools Using Hierarchical Clustering in Scikit-learn and SciPy"),
+    html.P("The methodology for this clustering can be seen in the Jupyter Binder here:"),
+    html.A(["https://mybinder.org/v2/gh/danielegos/usmedschoolmap/main?urlpath=%2Fdoc%2Ftree%2Fhierarchical_clustering_task2.ipynb",
+            html.Span("↗", style={"fontSize": "12px"})],
+           href="https://mybinder.org/v2/gh/danielegos/usmedschoolmap/main?urlpath=%2Fdoc%2Ftree%2Fhierarchical_clustering_task2.ipynb",
+           target="_blank"),
+    html.Br(),
+    html.Br(),
+    html.Img(src="assets/dendrogram.png", style={"width": "100%", "height": "auto"}),
+    # Add map of clustered schools
+    html.Br(),
+    html.Br(),
+    html.P("The map and table below show the placement of each medical school within the hierarchical cluster represented in the dendrogram above, along with a summary of the top five words which characterize its cluster."),
+    dcc.Graph(id="cluster_map", figure=cluster_fig),
+    html.Br(),
+
+    dash_table.DataTable(
+        data=table_df.to_dict('records'),
+        columns=[{"name": i, "id": i} for i in table_df.columns],
+        sort_action='native',  # Enable sorting
+        filter_action='native',  # Enable filtering
+        page_size=10,
+        style_cell={
+            'textAlign': 'left',  # Left align all cell text
+            'padding': '5px',
+            'whiteSpace': 'normal',  # Allow line wrapping if needed
+        },
+        style_header={
+            'fontWeight': 'bold',  # Bold headers
+            'textAlign': 'left',  # Left align header text
+            'backgroundColor': '#f9f9f9',  # Optional: light background color for headers
+        },
+
+
+        style_table={'overflowX': 'auto'},
+    ),
+    html.Br(),
+
+    html.P("The full dataset is available here:"),
+    html.A(
+        ["https://github.com/danielegos/usmedschoolmap/blob/main/clustered_schools.csv",
+         html.Span("↗", style={"fontSize": "12px"})],
+        href="https://github.com/danielegos/usmedschoolmap/blob/main/clustered_schools.csv",
+        target="_blank"),
+
+    html.Br(),
+    html.Hr(),
+    html.P("© Daniel Gallegos 2025. All rights reserved."),
+
     dcc.Store(id="redirect-path"),
     html.Div(id="dummy")  # placeholder output for clientside callback
 
