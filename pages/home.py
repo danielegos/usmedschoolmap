@@ -143,7 +143,7 @@ table_df = clustered_data[['School', 'hierarchical_cluster', 'cluster_summary']]
 
 layout = html.Div([
     html.H2("LCME Accredited MD and MD-PhD Programs in the United States"),
-    html.P("Updated 5-15-25 by Daniel Gallegos"),
+    html.P("Updated 5-20-25 by Daniel Gallegos"),
     html.P("Click on any of the points in the map below to be directed to that med school's summary page."),
     dcc.Graph(id="map", figure=fig),
     dcc.Location(id="map-url", refresh=True),
@@ -218,7 +218,7 @@ layout = html.Div([
 
     html.Br(),
     html.Hr(),
-    html.P("© Daniel Gallegos 2025. All rights reserved."),
+    html.P("© Daniel Gallegos 2025. All rights reserved. Feedback is encouraged."),
 
     dcc.Store(id="redirect-path"),
     html.Div(id="dummy")  # placeholder output for clientside callback
