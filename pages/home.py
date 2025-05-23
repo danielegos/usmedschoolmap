@@ -140,10 +140,28 @@ cluster_fig.update_traces(marker=dict(size=10))  # Increase or decrease as neede
 
 table_df = clustered_data[['School', 'hierarchical_cluster', 'cluster_summary']].copy()
 
+# Prep full data table with links
+# Create a new column with Markdown-formatted links
+clustered_data['Website_Link'] = clustered_data['Website'].apply(
+    lambda x: f"[{x}]({x})" if pd.notnull(x) and x.strip() else "N/A"
+)
+
+clustered_data['MD-PhD_Website_Link'] = clustered_data['MD-PhD_link'].apply(
+    lambda x: f"[{x}]({x})" if pd.notnull(x) and x.strip() else "N/A"
+)
+
+# Preview the updated DataFrame
+print(clustered_data[['Website', 'Website_Link']].head())
+print(clustered_data[['MD-PhD_link', 'MD-PhD_Website_Link']].head())
+
+full_table = clustered_data[['School', 'City', 'State', 'Website_Link', 'MD-PhD_Website_Link']].copy()
+
+
+
 
 layout = html.Div([
     html.H2("LCME Accredited MD and MD-PhD Programs in the United States"),
-    html.P("Updated 5-20-25 by Daniel Gallegos"),
+    html.P("Updated 5-23-25 by Daniel Gallegos"),
     html.P("Click on any of the points in the map below to be directed to that med school's summary page."),
     dcc.Graph(id="map", figure=fig),
     dcc.Location(id="map-url", refresh=True),
@@ -207,6 +225,41 @@ layout = html.Div([
 
         style_table={'overflowX': 'auto'},
     ),
+    html.Br(),
+    html.Br(),
+    html.Hr(),
+    html.Br(),
+    html.Br(),
+
+    # Include full list of schools
+    html.H2("Full list of LCME Accredited MD and MD-PhD Programs in the United States"),
+    html.Br(),
+
+    dash_table.DataTable(
+        data=full_table.to_dict('records'),
+        columns=[{"name": i, "id": i, "presentation": "markdown"} for i in full_table.columns],
+        sort_action='native',  # Enable sorting
+        filter_action='native',  # Enable filtering
+        page_size=160,
+        style_cell={
+            'textAlign': 'left',  # Left align all cell text
+            'padding': '5px',
+            'whiteSpace': 'normal',  # Allow line wrapping if needed
+        },
+        style_header={
+            'fontWeight': 'bold',  # Bold headers
+            'textAlign': 'left',  # Left align header text
+            'backgroundColor': '#f9f9f9',  # Optional: light background color for headers
+        },
+
+
+        style_table={'overflowX': 'auto'},
+    ),
+
+
+
+    html.Br(),
+    html.Hr(),
     html.Br(),
 
     html.P("The full dataset is available here:"),
